@@ -1,0 +1,11 @@
+{
+  "pythonPath": ".pixi/envs/dev/bin/python",
+  "workingDirectory": ".",
+  "environment": {
+    "PYTHONPATH": "./src",
+    "PYTHONUNBUFFERED": "1",
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "breakOnException": true,
+  "followForks": false
+}
