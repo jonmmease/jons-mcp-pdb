@@ -13,7 +13,7 @@ from typing import Dict, Any, Optional
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.mcp_pdb import PdbClient, DebuggerState, Config, StackFrame
+from src.jons_mcp_pdb import PdbClient, DebuggerState, Config, StackFrame
 
 
 @pytest.fixture

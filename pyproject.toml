@@ -30,7 +30,7 @@ dev = [
 ]
 
 [project.scripts]
-jons-mcp-pdb = "src.mcp_pdb:main"
+jons-mcp-pdb = "src.jons_mcp_pdb:main"
 
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]

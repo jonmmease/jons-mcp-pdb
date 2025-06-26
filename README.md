@@ -37,7 +37,7 @@ git clone https://github.com/jonmmease/jons-mcp-pdb.git
 cd jons-mcp-pdb
 
 # Install and run
-uv run python src/mcp_pdb.py
+uv run python src/jons_mcp_pdb.py
 ```
 
 ### Direct from GitHub
