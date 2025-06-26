@@ -626,14 +626,16 @@ def remove_breakpoint(session_id: str, breakpoint_id: int) -> Dict[str, str]:
 
 
 @mcp.tool()
-def list_breakpoints(session_id: str) -> Dict[str, Any]:
+def list_breakpoints(session_id: str, limit: Optional[int] = None, offset: int = 0) -> Dict[str, Any]:
     """List all breakpoints.
 
     Args:
         session_id: The session identifier
+        limit: Maximum number of breakpoints to return (optional)
+        offset: Number of breakpoints to skip (default: 0)
 
     Returns:
-        Array of breakpoint objects
+        Array of breakpoint objects with pagination info
     """
     result = client.send_command(session_id, "break")
 
@@ -644,10 +646,10 @@ def list_breakpoints(session_id: str) -> Dict[str, Any]:
     if not session:
         return {"error": "Session not found"}
 
-    # Return stored breakpoint info
-    breakpoints = []
+    # Get all breakpoints
+    all_breakpoints = []
     for bp in session.breakpoints.values():
-        breakpoints.append(
+        all_breakpoints.append(
             {
                 "id": bp.id,
                 "file": bp.file,
@@ -659,7 +661,25 @@ def list_breakpoints(session_id: str) -> Dict[str, Any]:
             }
         )
 
-    return {"breakpoints": breakpoints}
+    # Sort by ID for consistent ordering
+    all_breakpoints.sort(key=lambda x: x["id"])
+    total_breakpoints = len(all_breakpoints)
+
+    # Apply pagination
+    if limit is not None:
+        paginated_breakpoints = all_breakpoints[offset:offset + limit]
+    else:
+        paginated_breakpoints = all_breakpoints[offset:]
+
+    return {
+        "breakpoints": paginated_breakpoints,
+        "pagination": {
+            "offset": offset,
+            "limit": limit,
+            "total": total_breakpoints,
+            "returned": len(paginated_breakpoints)
+        }
+    }
 
 
 @mcp.tool()
@@ -890,15 +910,16 @@ def until(session_id: str, line: int) -> Dict[str, Any]:
 
 
 @mcp.tool()
-def where(session_id: str, limit: Optional[int] = None) -> Dict[str, Any]:
+def where(session_id: str, limit: Optional[int] = None, offset: int = 0) -> Dict[str, Any]:
     """Get current stack trace.
 
     Args:
         session_id: The session identifier
         limit: Maximum frames to return (optional)
+        offset: Number of frames to skip (default: 0)
 
     Returns:
-        Array of stack frames
+        Array of stack frames with pagination info
     """
     result = client.send_command(session_id, "where")
 
@@ -906,9 +927,13 @@ def where(session_id: str, limit: Optional[int] = None) -> Dict[str, Any]:
         return result
 
     frames = client._parse_stack_frames(result["output"])
+    total_frames = len(frames)
 
-    if limit and len(frames) > limit:
-        frames = frames[:limit]
+    # Apply pagination
+    if limit is not None:
+        paginated_frames = frames[offset:offset + limit]
+    else:
+        paginated_frames = frames[offset:]
 
     return {
         "frames": [
@@ -919,8 +944,14 @@ def where(session_id: str, limit: Optional[int] = None) -> Dict[str, Any]:
                 "function": frame.function,
                 "code": frame.code,
             }
-            for frame in frames
-        ]
+            for frame in paginated_frames
+        ],
+        "pagination": {
+            "offset": offset,
+            "limit": limit,
+            "total": total_frames,
+            "returned": len(paginated_frames)
+        }
     }
 
 
@@ -991,7 +1022,11 @@ def down(session_id: str, count: int = 1) -> Dict[str, Any]:
 
 @mcp.tool()
 def list_source(
-    session_id: str, line: Optional[int] = None, range: int = 5
+    session_id: str, 
+    line: Optional[int] = None, 
+    range: int = 5,
+    limit: Optional[int] = None,
+    offset: int = 0
 ) -> Dict[str, Any]:
     """Show source code around current or specified position.
 
@@ -999,9 +1034,11 @@ def list_source(
         session_id: The session identifier
         line: Center line (optional, defaults to current)
         range: Number of lines before/after (default: 5)
+        limit: Maximum number of lines to return (optional)
+        offset: Number of lines to skip from the start (default: 0)
 
     Returns:
-        Source code lines with line numbers and current line
+        Source code lines with line numbers, current line, and pagination info
     """
     if line:
         cmd = f"list {line - range}, {line + range}"
@@ -1018,12 +1055,45 @@ def list_source(
         session.current_frame.line if session and session.current_frame else None
     )
 
-    return {"source": result["output"], "current_line": current_line}
+    # Parse source lines for pagination
+    source_output = result["output"]
+    source_lines = source_output.split('\n')
+    
+    # Remove pdb prompt and empty lines at the end
+    while source_lines and (not source_lines[-1].strip() or source_lines[-1].strip() == "(Pdb)"):
+        source_lines.pop()
+    
+    total_lines = len(source_lines)
+    
+    # Apply pagination
+    if limit is not None:
+        paginated_lines = source_lines[offset:offset + limit]
+    else:
+        paginated_lines = source_lines[offset:]
+    
+    paginated_source = '\n'.join(paginated_lines)
+
+    result = {
+        "source": paginated_source,
+        "current_line": current_line,
+        "pagination": {
+            "offset": offset,
+            "limit": limit,
+            "total": total_lines,
+            "returned": len(paginated_lines)
+        }
+    }
+
+    return result
 
 
 @mcp.tool()
 def inspect_variable(
-    session_id: str, name: str, frame: Optional[int] = None
+    session_id: str, 
+    name: str, 
+    frame: Optional[int] = None,
+    limit: Optional[int] = None,
+    offset: int = 0
 ) -> Dict[str, Any]:
     """Get detailed information about a variable.
 
@@ -1031,9 +1101,11 @@ def inspect_variable(
         session_id: The session identifier
         name: Variable name
         frame: Stack frame index (optional, defaults to current)
+        limit: Maximum number of attributes to return (optional)
+        offset: Number of attributes to skip (default: 0)
 
     Returns:
-        Variable details including value, type, and attributes
+        Variable details including value, type, and attributes with pagination info
     """
     # Switch frame if needed
     if frame is not None:
@@ -1057,7 +1129,7 @@ def inspect_variable(
     repr_value = repr_result["output"].replace(PDB_PROMPT, "").strip()
 
     # Get attributes for complex types
-    attributes = {}
+    all_attributes = {}
     if type_name not in ["int", "float", "str", "bool", "NoneType"]:
         attrs_result = client.send_command(session_id, f"p dir({name})")
         if "error" not in attrs_result:
@@ -1070,29 +1142,55 @@ def inspect_variable(
                             session_id, f"p {name}.{attr}"
                         )
                         if "error" not in attr_result:
-                            attributes[attr] = (
+                            all_attributes[attr] = (
                                 attr_result["output"].replace(PDB_PROMPT, "").strip()
                             )
             except:
                 pass
 
+    # Apply pagination to attributes
+    attr_items = list(all_attributes.items())
+    total_attributes = len(attr_items)
+
+    if limit is not None:
+        paginated_attributes = dict(attr_items[offset:offset + limit])
+    else:
+        paginated_attributes = dict(attr_items[offset:])
+
     # Switch back frame if needed
     if frame is not None:
         client.send_command(session_id, f"down {frame}")
 
-    return {
+    result = {
         "name": name,
         "value": value,
         "type": type_name,
-        "attributes": attributes,
+        "attributes": paginated_attributes,
         "repr": repr_value,
         "str": value,
     }
 
+    # Add pagination info if there are attributes
+    if total_attributes > 0:
+        result["pagination"] = {
+            "attributes": {
+                "offset": offset,
+                "limit": limit,
+                "total": total_attributes,
+                "returned": len(paginated_attributes)
+            }
+        }
+
+    return result
+
 
 @mcp.tool()
 def list_variables(
-    session_id: str, frame: Optional[int] = None, include_globals: bool = False
+    session_id: str, 
+    frame: Optional[int] = None, 
+    include_globals: bool = False,
+    limit: Optional[int] = None,
+    offset: int = 0
 ) -> Dict[str, Any]:
     """List all variables in current scope.
 
@@ -1100,9 +1198,11 @@ def list_variables(
         session_id: The session identifier
         frame: Stack frame index (optional)
         include_globals: Include global variables (default: false)
+        limit: Maximum number of variables to return per category (optional)
+        offset: Number of variables to skip per category (default: 0)
 
     Returns:
-        Local and global variables
+        Local and global variables with pagination info
     """
     # Switch frame if needed
     if frame is not None:
@@ -1124,7 +1224,26 @@ def list_variables(
     except:
         pass
 
-    result = {"locals": locals_dict}
+    # Apply pagination to locals
+    locals_items = list(locals_dict.items())
+    locals_total = len(locals_items)
+    
+    if limit is not None:
+        locals_paginated = dict(locals_items[offset:offset + limit])
+    else:
+        locals_paginated = dict(locals_items[offset:])
+    
+    result = {
+        "locals": locals_paginated,
+        "pagination": {
+            "locals": {
+                "offset": offset,
+                "limit": limit,
+                "total": locals_total,
+                "returned": len(locals_paginated)
+            }
+        }
+    }
 
     # Get globals if requested
     if include_globals:
@@ -1139,7 +1258,23 @@ def list_variables(
                         globals_dict[k] = repr(v)[:100]
             except:
                 pass
-            result["globals"] = globals_dict
+            
+            # Apply pagination to globals
+            globals_items = list(globals_dict.items())
+            globals_total = len(globals_items)
+            
+            if limit is not None:
+                globals_paginated = dict(globals_items[offset:offset + limit])
+            else:
+                globals_paginated = dict(globals_items[offset:])
+            
+            result["globals"] = globals_paginated
+            result["pagination"]["globals"] = {
+                "offset": offset,
+                "limit": limit,
+                "total": globals_total,
+                "returned": len(globals_paginated)
+            }
 
     # Switch back frame if needed
     if frame is not None:
