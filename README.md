@@ -47,6 +47,16 @@ uv run python src/mcp_pdb.py
 uvx --from git+https://github.com/jonmmease/jons-mcp-pdb jons-mcp-pdb
 ```
 
+### Adding to Claude Code as MCP Server
+
+To use this with Claude Code, add it using the CLI:
+
+```bash
+claude mcp add jons-mcp-pdb uvx -- --from git+https://github.com/jonmmease/jons-mcp-pdb jons-mcp-pdb
+```
+
+The server will be available in Claude Code for debugging Python scripts and pytest tests.
+
 ## Configuration
 
 Create a `pdbconfig.json` file in your project root:
