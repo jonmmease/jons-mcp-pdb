@@ -1,11 +1,11 @@
 [project]
-name = "mcp-pdb"
+name = "jons-mcp-pdb"
 version = "0.1.0"
 description = "MCP server providing Python debugging capabilities through pdb"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
-authors = [{ name = "MCP PDB Contributors" }]
+authors = [{ name = "Jon Mease" }]
 keywords = ["mcp", "debugging", "pdb", "python", "debugger"]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -30,14 +30,14 @@ dev = [
 ]
 
 [project.scripts]
-mcp-pdb = "mcp_pdb:main"
+jons-mcp-pdb = "src.mcp_pdb:main"
 
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-py-modules = ["mcp_pdb"]
+packages = ["src"]
 
 [tool.black]
 line-length = 88

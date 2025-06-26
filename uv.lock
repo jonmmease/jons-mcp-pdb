@@ -302,6 +302,38 @@ wheels = [
 ]
 
 [[package]]
+name = "jons-mcp-pdb"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "fastmcp" },
+]
+
+[package.optional-dependencies]
+dev = [
+    { name = "black" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "ruff" },
+]
+test = [
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "black", marker = "extra == 'dev'", specifier = ">=23.0.0" },
+    { name = "fastmcp", specifier = ">=0.2.8" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.0.0" },
+    { name = "pytest", marker = "extra == 'test'", specifier = ">=7.0.0" },
+    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.21.0" },
+    { name = "pytest-asyncio", marker = "extra == 'test'", specifier = ">=0.21.0" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.1.0" },
+]
+provides-extras = ["test", "dev"]
+
+[[package]]
 name = "markdown-it-py"
 version = "3.0.0"
 source = { registry = "https://pypi.org/simple" }
@@ -332,38 +364,6 @@ sdist = { url = "https://files.pythonhosted.org/packages/06/f2/dc2450e566eeccf92
 wheels = [
     { url = "https://files.pythonhosted.org/packages/97/fc/80e655c955137393c443842ffcc4feccab5b12fa7cb8de9ced90f90e6998/mcp-1.9.4-py3-none-any.whl", hash = "sha256:7fcf36b62936adb8e63f89346bccca1268eeca9bf6dfb562ee10b1dfbda9dac0", size = 130232 },
 ]
-
-[[package]]
-name = "mcp-pdb"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "fastmcp" },
-]
-
-[package.optional-dependencies]
-dev = [
-    { name = "black" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "ruff" },
-]
-test = [
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "black", marker = "extra == 'dev'", specifier = ">=23.0.0" },
-    { name = "fastmcp", specifier = ">=0.2.8" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.0.0" },
-    { name = "pytest", marker = "extra == 'test'", specifier = ">=7.0.0" },
-    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.21.0" },
-    { name = "pytest-asyncio", marker = "extra == 'test'", specifier = ">=0.21.0" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.1.0" },
-]
-provides-extras = ["test", "dev"]
 
 [[package]]
 name = "mdurl"

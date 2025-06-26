@@ -1,4 +1,4 @@
-# MCP PDB Server
+# Jon's MCP PDB Server
 
 A Model Context Protocol (MCP) server that provides Python debugging capabilities through subprocess-based pdb integration.
 
@@ -34,17 +34,17 @@ This implementation uses a subprocess-based architecture where:
 ```bash
 # Clone the repository
 git clone <repo-url>
-cd mcp-pdb
+cd jons-mcp-pdb
 
 # Install and run
-uv run python mcp_pdb.py
+uv run python src/mcp_pdb.py
 ```
 
 ### Direct from GitHub
 
 ```bash
 # Run directly from GitHub
-uvx --from git+https://github.com/yourusername/mcp-pdb mcp-pdb
+uvx --from git+https://github.com/yourusername/jons-mcp-pdb jons-mcp-pdb
 ```
 
 ## Configuration
@@ -370,10 +370,10 @@ uv pip install -e ".[dev]"
 uv run python -m pytest
 
 # Format code
-uv run black mcp_pdb.py tests/
+uv run black src/ tests/
 
 # Lint code
-uv run ruff check mcp_pdb.py tests/
+uv run ruff check src/ tests/
 ```
 
 ## License
