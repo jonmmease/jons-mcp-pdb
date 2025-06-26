@@ -1,9 +1,0 @@
-{
-  "mcpServers": {
-    "pdb": {
-      "command": "/Users/jonmmease/VegaFusion/repos/mcp-pdb/.pixi/envs/dev/bin/python",
-      "args": ["pdb_mcp.py"],
-      "cwd": "/Users/jonmmease/VegaFusion/repos/mcp-pdb"
-    }
-  }
-}

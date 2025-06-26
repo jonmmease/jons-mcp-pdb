@@ -1,0 +1,11 @@
+{
+  "python_path": null,
+  "venv": ".venv",
+  "working_directory": ".",
+  "environment": {
+    "PYTHONPATH": "./src",
+    "DEBUG": "true"
+  },
+  "debug_mode": "script",
+  "pytest_args": ["-v", "-s"]
+}
