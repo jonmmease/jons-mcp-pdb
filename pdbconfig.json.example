@@ -6,6 +6,5 @@
     "PYTHONPATH": "./src",
     "DEBUG": "true"
   },
-  "debug_mode": "script",
   "pytest_args": ["-v", "-s"]
 }

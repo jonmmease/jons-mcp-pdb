@@ -70,7 +70,6 @@ Create a `pdbconfig.json` file in your project root:
     "PYTHONPATH": "./src",
     "DEBUG": "true"
   },
-  "debug_mode": "script",           // Default mode: "script" or "pytest"
   "pytest_args": ["-v", "-s"]       // Additional pytest arguments
 }
 ```
@@ -86,8 +85,8 @@ Initialize a debugging session.
 ```
 Args:
   target: Path to script or test file
+  mode: "script" or "pytest" (required)
   args: Command line arguments (optional)
-  mode: "script" or "pytest" (optional, defaults to config)
 Returns:
   session_id: Unique session identifier
   status: "started" or error message

@@ -62,7 +62,6 @@ class Config:
     venv: Optional[str] = None
     working_directory: str = "."
     environment: Dict[str, str] = field(default_factory=dict)
-    debug_mode: str = "script"  # "script" or "pytest"
     pytest_args: List[str] = field(default_factory=list)
 
 
@@ -466,20 +465,19 @@ client = PdbClient()
 
 @mcp.tool()
 def start_debug(
-    target: str, args: Optional[List[str]] = None, mode: Optional[str] = None
+    target: str, mode: str, args: Optional[List[str]] = None
 ) -> Dict[str, Any]:
     """Initialize a debugging session.
 
     Args:
         target: Path to script or test file
+        mode: "script" or "pytest"
         args: Command line arguments (optional)
-        mode: "script" or "pytest" (optional, defaults to config)
 
     Returns:
         session_id and status
     """
     session_id = client.create_session()
-    mode = mode or client.config.debug_mode
 
     result = client.start_debug(session_id, target, mode, args)
 
@@ -530,7 +528,7 @@ def restart_debug(session_id: str) -> Dict[str, Any]:
     client.close_session(session_id)
 
     # Start new session
-    return start_debug(target, args, mode)
+    return start_debug(target, mode, args)
 
 
 # Breakpoint Management Tools

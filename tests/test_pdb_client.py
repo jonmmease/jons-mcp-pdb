@@ -49,20 +49,17 @@ def test_config_loading():
     # Test default config
     client = PdbClient()
     assert client.config.working_directory == "."
-    assert client.config.debug_mode == "script"
 
     # Test config with custom values
-    config = Config(python_path="/usr/bin/python3", venv=".venv", debug_mode="pytest")
+    config = Config(python_path="/usr/bin/python3", venv=".venv")
     assert config.python_path == "/usr/bin/python3"
     assert config.venv == ".venv"
-    assert config.debug_mode == "pytest"
 
     # Test config loading from file
     config_path = Path("pdbconfig.json")
     test_config = {
         "python_path": sys.executable,
         "working_directory": ".",
-        "debug_mode": "script",
         "environment": {"TEST_VAR": "test_value"},
     }
 
@@ -74,7 +71,6 @@ def test_config_loading():
         test_client = PdbClient()
 
         assert test_client.config.python_path == sys.executable
-        assert test_client.config.debug_mode == "script"
         assert test_client.config.environment["TEST_VAR"] == "test_value"
 
     finally:
@@ -432,7 +428,7 @@ def test_error_handling(client):
     # Test starting debug without target
     session_id = client.create_session()
     try:
-        result = client.start_debug(session_id, "nonexistent_file.py")
+        result = client.start_debug(session_id, "nonexistent_file.py", mode="script")
         # Should handle gracefully
         assert result is not None
     finally:
