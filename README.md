@@ -33,7 +33,7 @@ This implementation uses a subprocess-based architecture where:
 
 ```bash
 # Clone the repository
-git clone <repo-url>
+git clone https://github.com/jonmmease/jons-mcp-pdb.git
 cd jons-mcp-pdb
 
 # Install and run
@@ -44,7 +44,7 @@ uv run python src/mcp_pdb.py
 
 ```bash
 # Run directly from GitHub
-uvx --from git+https://github.com/yourusername/jons-mcp-pdb jons-mcp-pdb
+uvx --from git+https://github.com/jonmmease/jons-mcp-pdb jons-mcp-pdb
 ```
 
 ## Configuration
