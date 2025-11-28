@@ -26,6 +26,7 @@ test = [
     "pytest-asyncio>=0.21.0",
     "pytest-timeout>=2.0.0",
     "pytest-mock>=3.0.0",
+    "pytest-cov>=4.0.0",
 ]
 dev = [
     "jons-mcp-pdb[test]",
@@ -50,6 +51,7 @@ dev-dependencies = [
     "pytest-asyncio>=0.21.0",
     "pytest-timeout>=2.0.0",
     "pytest-mock>=3.0.0",
+    "pytest-cov>=4.0.0",
     "black>=23.0.0",
     "ruff>=0.1.0",
     "mypy>=1.0.0",
@@ -87,6 +89,7 @@ check_untyped_defs = true
 strict_optional = true
 warn_redundant_casts = true
 warn_unused_ignores = true
+exclude = ["tests/samples/"]
 
 [[tool.mypy.overrides]]
 module = ["mcp.*", "fastmcp.*"]
@@ -97,9 +100,21 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = "-v"
+addopts = "-v --strict-markers"
 asyncio_mode = "auto"
 timeout = 30
 markers = [
     "integration: marks tests as integration tests (may require external processes)",
+]
+
+[tool.coverage.run]
+source = ["src"]
+branch = true
+omit = ["tests/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
 ]
