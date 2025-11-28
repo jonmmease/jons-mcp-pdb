@@ -1,50 +1,20 @@
 #!/usr/bin/env python3
 """Comprehensive tests for PdbClient functionality."""
 
-import pytest
 import json
-import time
-import sys
 import os
+import sys
 import tempfile
+import time
 from pathlib import Path
-from typing import Dict, Any, Optional
 
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent))
+import pytest
 
-from src.jons_mcp_pdb import PdbClient, DebuggerState, Config, StackFrame
-
-
-@pytest.fixture
-def client():
-    """Create a PdbClient instance and clean up after test."""
-    client = PdbClient()
-    
-    # Ensure clean state before test
-    for session_id in list(client.sessions.keys()):
-        client.close_session(session_id)
-
-    yield client
-
-    # Cleanup after test
-    for session_id in list(client.sessions.keys()):
-        client.close_session(session_id)
+from src.jons_mcp_pdb import Config, PdbClient
+from src.jons_mcp_pdb.constants import DebuggerState
 
 
-@pytest.fixture
-def test_script_path():
-    """Path to test script."""
-    return str(Path(__file__).parent.parent / "test_samples" / "sample_script.py")
-
-
-@pytest.fixture
-def test_module_path():
-    """Path to test module."""
-    return str(Path(__file__).parent.parent / "test_samples" / "sample_pytest_debug.py")
-
-
-def test_config_loading():
+def test_config_loading() -> None:
     """Test configuration loading."""
     # Test default config
     client = PdbClient()
@@ -78,7 +48,7 @@ def test_config_loading():
             config_path.unlink()
 
 
-def test_session_management(client):
+def test_session_management(client: PdbClient) -> None:
     """Test session creation and management."""
     # Test session creation
     session_id = client.create_session()
@@ -93,15 +63,15 @@ def test_session_management(client):
 
     # Test closing session
     success = client.close_session(session_id)
-    assert success == True
+    assert success is True
     assert session_id not in client.sessions
 
     # Test closing non-existent session
     success = client.close_session("non_existent")
-    assert success == False
+    assert success is False
 
 
-def test_location_parsing(client):
+def test_location_parsing(client: PdbClient) -> None:
     """Test parsing of location information."""
     # Test valid location
     output = "> /path/to/file.py(42)function_name()"
@@ -117,7 +87,7 @@ def test_location_parsing(client):
     assert location is None
 
 
-def test_stack_frame_parsing(client):
+def test_stack_frame_parsing(client: PdbClient) -> None:
     """Test parsing of stack frames."""
     # Test valid stack trace
     output = """  /path/to/file1.py(10)main()
@@ -140,7 +110,7 @@ def test_stack_frame_parsing(client):
     assert frames[2].function == "deep_function"
 
 
-def test_python_executable_detection(client):
+def test_python_executable_detection(client: PdbClient) -> None:
     """Test Python executable detection."""
     # Test finding Python executable
     python_exe = client._find_python_executable()
@@ -153,7 +123,8 @@ def test_python_executable_detection(client):
     assert python_exe == sys.executable
 
 
-def test_script_mode_debugging(client, test_script_path):
+@pytest.mark.integration
+def test_script_mode_debugging(client: PdbClient, test_script_path: str) -> None:
     """Test debugging a Python script."""
     session_id = client.create_session()
 
@@ -190,7 +161,8 @@ def test_script_mode_debugging(client, test_script_path):
         client.close_session(session_id)
 
 
-def test_pytest_mode_debugging(client, test_module_path):
+@pytest.mark.integration
+def test_pytest_mode_debugging(client: PdbClient, test_module_path: str) -> None:
     """Test debugging pytest tests."""
     session_id = client.create_session()
 
@@ -213,7 +185,8 @@ def test_pytest_mode_debugging(client, test_module_path):
         client.close_session(session_id)
 
 
-def test_breakpoint_operations(client, test_script_path):
+@pytest.mark.integration
+def test_breakpoint_operations(client: PdbClient, test_script_path: str) -> None:
     """Test breakpoint setting, listing, and removal."""
     session_id = client.create_session()
 
@@ -240,6 +213,7 @@ def test_breakpoint_operations(client, test_script_path):
 
         # Should hit the breakpoint
         session = client.sessions.get(session_id)
+        assert session is not None
         assert session.state == DebuggerState.PAUSED
 
         # Remove breakpoint
@@ -250,7 +224,8 @@ def test_breakpoint_operations(client, test_script_path):
         client.close_session(session_id)
 
 
-def test_stepping_operations(client, test_script_path):
+@pytest.mark.integration
+def test_stepping_operations(client: PdbClient, test_script_path: str) -> None:
     """Test step, next, and continue operations."""
     session_id = client.create_session()
 
@@ -280,13 +255,15 @@ def test_stepping_operations(client, test_script_path):
         session = client.sessions.get(session_id)
 
         # Should have finished or be at another breakpoint
+        assert session is not None
         assert session.state in [DebuggerState.FINISHED, DebuggerState.PAUSED]
 
     finally:
         client.close_session(session_id)
 
 
-def test_stack_navigation(client, test_script_path):
+@pytest.mark.integration
+def test_stack_navigation(client: PdbClient, test_script_path: str) -> None:
     """Test where, up, and down commands."""
     session_id = client.create_session()
 
@@ -323,7 +300,8 @@ def test_stack_navigation(client, test_script_path):
         client.close_session(session_id)
 
 
-def test_variable_inspection(client, test_script_path):
+@pytest.mark.integration
+def test_variable_inspection(client: PdbClient, test_script_path: str) -> None:
     """Test variable listing and inspection."""
     session_id = client.create_session()
 
@@ -359,7 +337,8 @@ def test_variable_inspection(client, test_script_path):
         client.close_session(session_id)
 
 
-def test_concurrent_sessions(client, test_script_path):
+@pytest.mark.integration
+def test_concurrent_sessions(client: PdbClient, test_script_path: str) -> None:
     """Test running multiple debug sessions concurrently."""
     session1 = client.create_session()
     session2 = client.create_session()
@@ -373,9 +352,7 @@ def test_concurrent_sessions(client, test_script_path):
         assert "error" not in result2
 
         # Verify both sessions are independent
-        assert (
-            client.sessions[session1].process != client.sessions[session2].process
-        )
+        assert client.sessions[session1].process != client.sessions[session2].process
 
         time.sleep(0.5)  # Let processes start
 
@@ -391,7 +368,8 @@ def test_concurrent_sessions(client, test_script_path):
         client.close_session(session2)
 
 
-def test_command_line_arguments(client, test_script_path):
+@pytest.mark.integration
+def test_command_line_arguments(client: PdbClient, test_script_path: str) -> None:
     """Test debugging with command line arguments."""
     session_id = client.create_session()
 
@@ -413,13 +391,14 @@ def test_command_line_arguments(client, test_script_path):
 
         # Check if arguments were processed
         session = client.sessions.get(session_id)
+        assert session is not None
         # Output would contain "Command line arguments: ['5', 'test_arg']"
 
     finally:
         client.close_session(session_id)
 
 
-def test_error_handling(client):
+def test_error_handling(client: PdbClient) -> None:
     """Test error handling scenarios."""
     # Test invalid session ID
     result = client.send_command("invalid_session", "list")
@@ -435,11 +414,13 @@ def test_error_handling(client):
         client.close_session(session_id)
 
 
-def test_simple_script_execution(client):
+@pytest.mark.integration
+def test_simple_script_execution(client: PdbClient) -> None:
     """Test basic debugging with a simple temporary script."""
     # Create a temporary test script
     with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
-        f.write("""
+        f.write(
+            """
 import sys
 
 def main():
@@ -452,7 +433,8 @@ def main():
 if __name__ == "__main__":
     result = main()
     sys.exit(0)
-""")
+"""
+        )
         test_script = f.name
 
     try:

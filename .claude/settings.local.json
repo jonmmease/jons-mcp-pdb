@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pixi run:*)",
+      "mcp__pdb__start_debug",
+      "mcp__pdb__set_breakpoint",
+      "mcp__pdb__continue_execution",
+      "mcp__pdb__list_variables",
+      "Bash(timeout 5 uv run python -m pytest --pdb-trace -s tests/samples/test_pytest_debug.py::test_add_numbers)",
+      "Bash(uv run:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(rg:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": []
+  }
+}

@@ -26,6 +26,7 @@ This implementation uses a subprocess-based architecture where:
 - **pytest Integration**: Debug pytest test suites with `--trace` flag
 - **Virtual Environment Support**: Automatically detect and use virtual environments
 - **Configuration Support**: Customize behavior via `pdbconfig.json`
+- **Pagination Support**: All list operations support limit/offset pagination
 
 ## Installation
 
@@ -37,7 +38,7 @@ git clone https://github.com/jonmmease/jons-mcp-pdb.git
 cd jons-mcp-pdb
 
 # Install and run
-uv run python src/jons_mcp_pdb.py
+uv run jons-mcp-pdb
 ```
 
 ### Direct from GitHub
@@ -52,7 +53,11 @@ uvx --from git+https://github.com/jonmmease/jons-mcp-pdb jons-mcp-pdb
 To use this with Claude Code, add it using the CLI:
 
 ```bash
-claude mcp add jons-mcp-pdb uvx -- --from git+https://github.com/jonmmease/jons-mcp-pdb jons-mcp-pdb
+# From GitHub (recommended)
+claude mcp add jons-mcp-pdb -- uvx --from git+https://github.com/jonmmease/jons-mcp-pdb jons-mcp-pdb
+
+# Local development
+claude mcp add jons-mcp-pdb -- uv run --directory /path/to/jons-mcp-pdb jons-mcp-pdb
 ```
 
 The server will be available in Claude Code for debugging Python scripts and pytest tests.
@@ -143,8 +148,11 @@ List all breakpoints.
 ```
 Args:
   session_id: The session identifier
+  limit: Maximum breakpoints to return (optional)
+  offset: Number to skip (default: 0)
 Returns:
   breakpoints: Array of breakpoint objects
+  pagination: Pagination metadata
 ```
 
 #### enable_breakpoint / disable_breakpoint
@@ -216,8 +224,10 @@ Get current stack trace.
 Args:
   session_id: The session identifier
   limit: Maximum frames to return (optional)
+  offset: Number to skip (default: 0)
 Returns:
   frames: Array of stack frames
+  pagination: Pagination metadata
 ```
 
 #### up
@@ -249,9 +259,12 @@ Args:
   session_id: The session identifier
   line: Center line (optional, defaults to current)
   range: Number of lines before/after (default: 5)
+  limit: Maximum lines to return (optional)
+  offset: Number to skip (default: 0)
 Returns:
   source: Source code lines with line numbers
   current_line: Currently executing line
+  pagination: Pagination metadata
 ```
 
 #### inspect_variable
@@ -261,6 +274,8 @@ Args:
   session_id: The session identifier
   name: Variable name
   frame: Stack frame index (optional, defaults to current)
+  limit: Maximum attributes to return (optional)
+  offset: Number to skip (default: 0)
 Returns:
   name: Variable name
   value: String representation
@@ -268,6 +283,7 @@ Returns:
   attributes: Object attributes (for complex types)
   repr: repr() output
   str: str() output
+  pagination: Pagination metadata (for attributes)
 ```
 
 #### list_variables
@@ -277,9 +293,12 @@ Args:
   session_id: The session identifier
   frame: Stack frame index (optional)
   include_globals: Include global variables (default: false)
+  limit: Maximum variables per category (optional)
+  offset: Number to skip per category (default: 0)
 Returns:
   locals: Local variables
   globals: Global variables (if requested)
+  pagination: Pagination metadata
 ```
 
 #### evaluate
@@ -297,52 +316,27 @@ Returns:
 
 ## Testing
 
-### Test Files
-
-#### test_pdb_client.py
-Comprehensive test suite for the PdbClient class. Tests include:
-- Configuration loading and management
-- Session creation and lifecycle
-- Script mode debugging (Python scripts)
-- Pytest mode debugging (pytest tests)  
-- Breakpoint operations (set, list, remove)
-- Stepping operations (step, next, continue)
-- Stack navigation (where, up, down)
-- Variable inspection and evaluation
-- Concurrent session handling
-- Command-line argument processing
-- Error handling scenarios
-
-#### test_samples/sample_script.py
-A simple Python script designed for debugging demonstrations. It includes:
-- Recursive functions (factorial calculation)
-- List processing
-- Class definitions and methods
-- Exception handling
-- Command-line argument processing
-
-#### test_samples/sample_pytest_debug.py
-A pytest test suite designed for debugging with pytest. It includes:
-- Calculator class with various operations
-- Fibonacci sequence calculations
-- Data processing functions
-- Parameterized tests
-- Nested function calls
-- Exception handling scenarios
-
 ### Running Tests
 
-Run the comprehensive test suite:
-
 ```bash
-uv run python -m pytest tests/test_pdb_client.py -v
+# Run all tests
+uv run pytest
+
+# Run unit tests only (no subprocess spawning)
+uv run pytest -m "not integration"
+
+# Run integration tests only
+uv run pytest -m integration
+
+# Run with verbose output
+uv run pytest -v
 ```
 
-Test pytest debugging integration:
+### Test Structure
 
-```bash
-uv run python -m pytest test_samples/sample_pytest_debug.py --trace
-```
+- **Unit tests**: Test parsing, config loading, session management without subprocesses
+- **Integration tests**: Spawn real pdb processes to test end-to-end behavior
+- **Sample scripts**: Located in `tests/samples/`
 
 ## Virtual Environment Support
 
@@ -376,13 +370,16 @@ The server automatically detects and uses virtual environments in the following 
 uv pip install -e ".[dev]"
 
 # Run tests
-uv run python -m pytest
+uv run pytest
+
+# Type checking
+uv run mypy src/jons_mcp_pdb
 
 # Format code
-uv run black src/ tests/
+uv run black src tests
 
 # Lint code
-uv run ruff check src/ tests/
+uv run ruff check src tests
 ```
 
 ## License

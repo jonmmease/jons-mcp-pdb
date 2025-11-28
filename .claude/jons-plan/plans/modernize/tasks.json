@@ -1,0 +1,317 @@
+[
+  {
+    "id": "create-package-structure",
+    "description": "Create the new package directory structure under src/jons_mcp_pdb/",
+    "parents": [],
+    "steps": [
+      "Create src/jons_mcp_pdb/ directory",
+      "Create src/jons_mcp_pdb/__init__.py with version and exports",
+      "Create empty src/jons_mcp_pdb/tools/ directory with __init__.py",
+      "Verify directory structure is correct"
+    ],
+    "status": "done"
+  },
+  {
+    "id": "extract-constants",
+    "description": "Extract constants, enums, and configuration defaults to constants.py",
+    "parents": [
+      "create-package-structure"
+    ],
+    "steps": [
+      "Create src/jons_mcp_pdb/constants.py",
+      "Move DebuggerState enum to constants.py",
+      "Extract timeout constants (command timeout, read timeout, etc.)",
+      "Extract pagination defaults (DEFAULT_PAGINATION_LIMIT, DEFAULT_PAGINATION_OFFSET)",
+      "Add any other configuration constants"
+    ],
+    "status": "done"
+  },
+  {
+    "id": "extract-exceptions",
+    "description": "Create custom exception classes in exceptions.py",
+    "parents": [
+      "create-package-structure"
+    ],
+    "steps": [
+      "Create src/jons_mcp_pdb/exceptions.py",
+      "Create PdbSessionError for session-related errors",
+      "Create PdbCommandError for command execution errors",
+      "Create PdbNotInitializedError for uninitialized session access",
+      "Create InvalidBreakpointError for breakpoint issues"
+    ],
+    "status": "done"
+  },
+  {
+    "id": "extract-utils",
+    "description": "Extract utility functions to utils.py",
+    "parents": [
+      "create-package-structure"
+    ],
+    "steps": [
+      "Create src/jons_mcp_pdb/utils.py",
+      "Move apply_pagination function",
+      "Move location parsing utilities",
+      "Move stack frame parsing utilities",
+      "Add any path/file handling utilities"
+    ],
+    "status": "done"
+  },
+  {
+    "id": "extract-pdb-client",
+    "description": "Extract PdbClient class to pdb_client.py",
+    "parents": [
+      "extract-constants",
+      "extract-exceptions",
+      "extract-utils"
+    ],
+    "steps": [
+      "Create src/jons_mcp_pdb/pdb_client.py",
+      "Move Config dataclass",
+      "Move Breakpoint dataclass",
+      "Move StackFrame dataclass",
+      "Move DebugSession dataclass",
+      "Move PdbClient class with all methods",
+      "Update imports to use constants, exceptions, and utils modules",
+      "Add type hints to all methods"
+    ],
+    "status": "done"
+  },
+  {
+    "id": "extract-session-tools",
+    "description": "Extract session management tools to tools/session.py",
+    "parents": [
+      "extract-pdb-client"
+    ],
+    "steps": [
+      "Create src/jons_mcp_pdb/tools/session.py",
+      "Move start_debug tool",
+      "Move stop_debug tool",
+      "Move restart_debug tool",
+      "Add proper type hints and docstrings"
+    ],
+    "status": "done"
+  },
+  {
+    "id": "extract-breakpoint-tools",
+    "description": "Extract breakpoint tools to tools/breakpoints.py",
+    "parents": [
+      "extract-pdb-client"
+    ],
+    "steps": [
+      "Create src/jons_mcp_pdb/tools/breakpoints.py",
+      "Move set_breakpoint tool",
+      "Move remove_breakpoint tool",
+      "Move list_breakpoints tool",
+      "Move enable_breakpoint tool",
+      "Move disable_breakpoint tool",
+      "Add proper type hints and docstrings"
+    ],
+    "status": "done"
+  },
+  {
+    "id": "extract-execution-tools",
+    "description": "Extract execution control tools to tools/execution.py",
+    "parents": [
+      "extract-pdb-client"
+    ],
+    "steps": [
+      "Create src/jons_mcp_pdb/tools/execution.py",
+      "Move continue_execution tool",
+      "Move step tool",
+      "Move next tool",
+      "Move return_from_function tool",
+      "Move until tool",
+      "Add proper type hints and docstrings"
+    ],
+    "status": "done"
+  },
+  {
+    "id": "extract-navigation-tools",
+    "description": "Extract stack navigation tools to tools/navigation.py",
+    "parents": [
+      "extract-pdb-client"
+    ],
+    "steps": [
+      "Create src/jons_mcp_pdb/tools/navigation.py",
+      "Move where tool",
+      "Move backtrace tool",
+      "Move up tool",
+      "Move down tool",
+      "Add proper type hints and docstrings"
+    ],
+    "status": "done"
+  },
+  {
+    "id": "extract-inspection-tools",
+    "description": "Extract inspection tools to tools/inspection.py",
+    "parents": [
+      "extract-pdb-client"
+    ],
+    "steps": [
+      "Create src/jons_mcp_pdb/tools/inspection.py",
+      "Move list_source tool",
+      "Move inspect_variable tool",
+      "Move list_variables tool",
+      "Move evaluate tool",
+      "Add proper type hints and docstrings"
+    ],
+    "status": "done"
+  },
+  {
+    "id": "create-tools-init",
+    "description": "Create tools/__init__.py with clean re-exports",
+    "parents": [
+      "extract-session-tools",
+      "extract-breakpoint-tools",
+      "extract-execution-tools",
+      "extract-navigation-tools",
+      "extract-inspection-tools"
+    ],
+    "steps": [
+      "Update src/jons_mcp_pdb/tools/__init__.py",
+      "Add re-exports for all tool functions",
+      "Organize imports by category with comments"
+    ],
+    "status": "done"
+  },
+  {
+    "id": "create-server-module",
+    "description": "Create server.py with FastMCP setup and lifespan management",
+    "parents": [
+      "create-tools-init"
+    ],
+    "steps": [
+      "Create src/jons_mcp_pdb/server.py",
+      "Set up FastMCP instance with proper name and instructions",
+      "Implement lifespan context manager for session cleanup",
+      "Add signal handling for graceful shutdown",
+      "Register all tools with mcp.tool() decorator",
+      "Create main() entry point function",
+      "Add module-level state management (sessions dict)"
+    ],
+    "status": "done"
+  },
+  {
+    "id": "update-package-init",
+    "description": "Update package __init__.py with exports and version",
+    "parents": [
+      "create-server-module"
+    ],
+    "steps": [
+      "Update src/jons_mcp_pdb/__init__.py",
+      "Add __version__ = '0.1.0'",
+      "Export main function",
+      "Export key classes (PdbClient, etc.) for programmatic use"
+    ],
+    "status": "done"
+  },
+  {
+    "id": "update-pyproject-toml",
+    "description": "Modernize pyproject.toml configuration",
+    "parents": [
+      "update-package-init"
+    ],
+    "steps": [
+      "Update entry point to src.jons_mcp_pdb:main",
+      "Add mypy configuration with strict settings",
+      "Update pytest configuration to match reference",
+      "Add pytest markers for integration tests",
+      "Configure [tool.uv] dev-dependencies",
+      "Ensure optional-dependencies groups are correct",
+      "Add pytest-timeout to test dependencies"
+    ],
+    "status": "done"
+  },
+  {
+    "id": "reorganize-tests",
+    "description": "Reorganize test files and add conftest.py",
+    "parents": [
+      "update-pyproject-toml"
+    ],
+    "steps": [
+      "Create tests/conftest.py with shared fixtures",
+      "Add reset_globals fixture for test isolation",
+      "Add sample_script fixture pointing to test samples",
+      "Move test_samples/ to tests/samples/",
+      "Update test imports to use new package structure",
+      "Split tests into test_pdb_client.py and test_mcp_tools.py if needed",
+      "Add @pytest.mark.integration markers to integration tests"
+    ],
+    "status": "done"
+  },
+  {
+    "id": "create-claude-md",
+    "description": "Create CLAUDE.md development guide",
+    "parents": [
+      "reorganize-tests"
+    ],
+    "steps": [
+      "Create CLAUDE.md in project root",
+      "Document all uv development commands",
+      "Document package architecture and module organization",
+      "Document key patterns (session management, pagination, etc.)",
+      "Document testing strategy (unit vs integration)"
+    ],
+    "status": "done"
+  },
+  {
+    "id": "update-readme",
+    "description": "Update README.md with uv-focused instructions",
+    "parents": [
+      "create-claude-md"
+    ],
+    "steps": [
+      "Remove any pixi references",
+      "Update installation instructions to use uv",
+      "Update MCP registration examples to use uv/uvx",
+      "Update development instructions",
+      "Ensure all example commands use uv"
+    ],
+    "status": "done"
+  },
+  {
+    "id": "remove-old-source",
+    "description": "Remove old source file after migration is complete",
+    "parents": [
+      "update-readme"
+    ],
+    "steps": [
+      "Delete src/jons_mcp_pdb.py (old monolithic file)",
+      "Update src/__init__.py if needed",
+      "Verify no references to old file remain"
+    ],
+    "status": "done"
+  },
+  {
+    "id": "run-tests-and-fix",
+    "description": "Run full test suite and fix any issues",
+    "parents": [
+      "remove-old-source"
+    ],
+    "steps": [
+      "Run uv run pytest to execute all tests",
+      "Fix any import errors or broken tests",
+      "Run uv run mypy src/jons_mcp_pdb to check types",
+      "Fix any type errors",
+      "Run uv run ruff check src tests to lint",
+      "Fix any linting issues",
+      "Run uv run black src tests to format",
+      "Ensure all tests pass"
+    ],
+    "status": "done"
+  },
+  {
+    "id": "verify-mcp-registration",
+    "description": "Verify MCP server registration and functionality",
+    "parents": [
+      "run-tests-and-fix"
+    ],
+    "steps": [
+      "Test uv run jons-mcp-pdb command starts server",
+      "Verify all MCP tools are properly registered",
+      "Test basic debugging workflow (start, breakpoint, continue, stop)",
+      "Update .claude/settings.local.json if needed"
+    ],
+    "status": "done"
+  }
+]

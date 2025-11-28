@@ -2,7 +2,6 @@
 """Test script for debugging with MCP PDB server."""
 
 import sys
-import time
 
 
 def calculate_factorial(n):
